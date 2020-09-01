@@ -16,7 +16,7 @@ const Ingredients = () => {
   }, []);
 
   // https://console.firebase.google.com/u/0/project/react-hooks-update-faf1a/database/react-hooks-update-faf1a/data
-  // try git config --global core.safecrlf false to get ride of the warning when git add .
+  // try ' git config --global core.safecrlf false ' to get ride of the warning when git add .
   const addIngredientHandler = (ingredient) => {
     fetch("https://react-hooks-update-faf1a.firebaseio.com/ingredients.json", {
       method: "POST",
