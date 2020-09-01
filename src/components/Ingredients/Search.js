@@ -26,8 +26,8 @@ const Search = React.memo((props) => {
             for (const key in responseData) {
               loadedIngredients.push({
                 id: key,
-                title: responseData[key].ingredient.title,
-                amount: responseData[key].ingredient.amount,
+                title: responseData[key].title,
+                amount: responseData[key].amount,
               });
               console.log(
                 `key is ${key}, responseData[key] is ${JSON.stringify(
