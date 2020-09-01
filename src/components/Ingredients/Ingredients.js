@@ -34,7 +34,7 @@ const Ingredients = () => {
 
   const removeIngredientHandler = (ingredientId) => {
     fetch(
-      `https://react-hooks-update.firebaseio.com/${ingredientId}ingredients.json`,
+      `https://react-hooks-update-faf1a.firebaseio.com/ingredients/${ingredientId}.json`,
       {
         method: "DELETE",
       }
