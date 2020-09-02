@@ -4,6 +4,7 @@ import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
 import ErrorModel from "../UI/ErrorModal";
 import Search from "./Search";
+import useHttp from "../../hooks/httpHook";
 
 const ingredientReducer = (currentIngredients, action) => {
   switch (action.type) {
@@ -20,30 +21,28 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
-const httpReducer = (curHttpState, action) => {
-  switch (action.type) {
-    case "SEND":
-      return { loading: true, error: null };
-    case "RESPONSE":
-      return { ...curHttpState, loading: false };
-    case "ERROR":
-      return { loading: false, error: action.errorMessage };
-    case "CLEAR":
-      return { ...curHttpState, error: null };
-    default:
-      throw new Error("Should not be reached!");
-  }
-};
-
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  const [httpState, dispatchHTTP] = useReducer(httpReducer, {
-    loading: false,
-    error: null,
-  });
+
+  const {
+    isLoading,
+    error,
+    data,
+    sendRequest,
+    reqExtra,
+    reqIdentifier,
+  } = useHttp();
+
   useEffect(() => {
-    console.log("RENDERING INGREDIENTS", userIngredients);
-  }, [userIngredients]);
+    if (!isLoading && !error && reqIdentifier === "REMOVE_INGREDIENT") {
+      dispatch({ type: "DELETE", id: reqExtra });
+    } else if (!isLoading && !error && reqIdentifier === "ADD_INGREDIENT") {
+      dispatch({
+        type: "ADD",
+        ingredient: { id: data.name, ...reqExtra },
+      });
+    }
+  }, [data, reqExtra, reqIdentifier, isLoading, error]);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
     dispatch({ type: "SET", ingredients: filteredIngredients });
@@ -52,55 +51,29 @@ const Ingredients = () => {
   // https://console.firebase.google.com/u/0/project/react-hooks-update-faf1a/database/react-hooks-update-faf1a/data
   // try ' git config --global core.safecrlf false ' to get ride of the warning when git add .
   const addIngredientHandler = useCallback((ingredient) => {
-    dispatchHTTP({ type: "SEND" }); //this action doesn't need any old data to work. see above httpReducer return statement
-    fetch("https://react-hooks-update-faf1a.firebaseio.com/ingredients.json", {
-      method: "POST",
-      body: JSON.stringify(ingredient),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        dispatchHTTP({ type: "RESPONSE" });
-        return response.json();
-      })
-      .then((responseData) => {
-        dispatch({
-          type: "ADD",
-          ingredient: { id: responseData.name, ...ingredient },
-        });
-      })
-      .catch((error) => {
-        dispatchHTTP({
-          type: "ERROR",
-          errorMessage:
-            "Something went wrong while adding, please contact developer!",
-        });
-      });
+    sendRequest(
+      "https://react-hooks-update-faf1a.firebaseio.com/ingredients.json",
+      "POST",
+      JSON.stringify(ingredient),
+      ingredient,
+      "ADD_INGREDIENT"
+    );
   }, []);
 
-  const removeIngredientHandler = useCallback((ingredientId) => {
-    dispatchHTTP({ type: "SEND" });
-    fetch(
-      `https://react-hooks-update-faf1a.firebaseio.com/ingredients/${ingredientId}.json`,
-      {
-        method: "DELETE",
-      }
-    )
-      .then((response) => {
-        dispatchHTTP({ type: "RESPONSE" });
-        dispatch({ type: "DELETE", id: ingredientId });
-      })
-      .catch((error) => {
-        dispatchHTTP({
-          type: "ERROR",
-          errorMessage:
-            "Something went wrong while deleting, please contact developer!",
-        });
-      });
-  }, []);
+  const removeIngredientHandler = useCallback(
+    (ingredientId) => {
+      sendRequest(
+        `https://react-hooks-update-faf1a.firebaseio.com/ingredients/${ingredientId}.json`,
+        "DELETE",
+        null,
+        ingredientId,
+        "REMOVE_INGREDIENT"
+      );
+    },
+    [sendRequest]
+  );
 
-  const clearError = useCallback(() => {
-    dispatchHTTP({ type: "CLEAR" });
-  }, []);
+  const clearError = useCallback(() => {}, []);
 
   const ingredientList = useMemo(() => {
     return (
@@ -113,12 +86,10 @@ const Ingredients = () => {
 
   return (
     <div className='App'>
-      {httpState.error && (
-        <ErrorModel onClose={clearError}>{httpState.error}</ErrorModel>
-      )}
+      {error && <ErrorModel onClose={clearError}>{error}</ErrorModel>}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={httpState.loading}
+        loading={isLoading}
       />
 
       <section>
