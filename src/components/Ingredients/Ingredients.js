@@ -13,6 +13,8 @@ const ingredientReducer = (currentIngredients, action) => {
       return [...currentIngredients, action.ingredient];
     case "DELETE":
       return currentIngredients.filter((ing) => ing.id !== action.id);
+    case "ERROR":
+      return { loading: false, error: action.errorMessage };
     default:
       throw new Error("Should not get here!");
   }
@@ -65,6 +67,13 @@ const Ingredients = () => {
           type: "ADD",
           ingredient: { id: responseData.name, ...ingredient },
         });
+      })
+      .catch((error) => {
+        dispatchHTTP({
+          type: "ERROR",
+          errorMessage:
+            "Something went wrong while adding, please contact developer!",
+        });
       });
   };
 
@@ -83,7 +92,8 @@ const Ingredients = () => {
       .catch((error) => {
         dispatchHTTP({
           type: "ERROR",
-          errorMessage: "Something went wrong, please contact developer!",
+          errorMessage:
+            "Something went wrong while deleting, please contact developer!",
         });
       });
   };
