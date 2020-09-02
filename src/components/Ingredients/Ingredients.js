@@ -1,18 +1,36 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useReducer, useState, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
+import ErrorModel from "../UI/ErrorModal";
 import Search from "./Search";
 
+const ingredientReducer = (currentIngredients, action) => {
+  switch (action.type) {
+    case "SET":
+      return action.ingredients;
+    case "ADD":
+      return [...currentIngredients, action.ingredient];
+    case "DELETE":
+      return currentIngredients.filter((ing) => ing.id !== action.id);
+    default:
+      throw new Error("Should not get here!");
+  }
+};
+
 const Ingredients = () => {
-  const [userIngredients, setUserIngredients] = useState([]);
+  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+  // const [userIngredients, setUserIngredients] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
 
   useEffect(() => {
     console.log("RENDERING INGREDIENTS", userIngredients);
   }, [userIngredients]);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
-    setUserIngredients(filteredIngredients);
+    // setUserIngredients(filteredIngredients);
+    dispatch({ type: "SET", ingredients: filteredIngredients });
   }, []);
 
   // https://console.firebase.google.com/u/0/project/react-hooks-update-faf1a/database/react-hooks-update-faf1a/data
@@ -27,10 +45,14 @@ const Ingredients = () => {
         return response.json();
       })
       .then((responseData) => {
-        setUserIngredients((prevIngredients) => [
-          ...prevIngredients,
-          { id: responseData.name, ...ingredient },
-        ]);
+        // setUserIngredients((prevIngredients) => [
+        //   ...prevIngredients,
+        //   { id: responseData.name, ...ingredient },
+        // ]);
+        dispatch({
+          type: "ADD",
+          ingredient: { id: responseData.name, ...ingredient },
+        });
       });
   };
 
@@ -40,16 +62,31 @@ const Ingredients = () => {
       {
         method: "DELETE",
       }
-    ).then((response) => {
-      setUserIngredients((prevIngredients) =>
-        prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
-      );
-    });
+    )
+      .then((response) => {
+        setIsLoading(false);
+        // setUserIngredients((prevIngredients) =>
+        //   prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
+        // );
+        dispatch({ type: "DELETE", id: ingredientId });
+      })
+      .catch((error) => {
+        setError("Something went wrong, please contact developer.");
+        setIsLoading(false);
+      });
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return (
     <div className='App'>
-      <IngredientForm onAddIngredient={addIngredientHandler} />
+      {error && <ErrorModel onClose={clearError}>{error}</ErrorModel>}
+      <IngredientForm
+        onAddIngredient={addIngredientHandler}
+        loading={isLoading}
+      />
 
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler} />
