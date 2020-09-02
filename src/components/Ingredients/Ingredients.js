@@ -51,7 +51,7 @@ const Ingredients = () => {
 
   // https://console.firebase.google.com/u/0/project/react-hooks-update-faf1a/database/react-hooks-update-faf1a/data
   // try ' git config --global core.safecrlf false ' to get ride of the warning when git add .
-  const addIngredientHandler = (ingredient) => {
+  const addIngredientHandler = useCallback((ingredient) => {
     dispatchHTTP({ type: "SEND" }); //this action doesn't need any old data to work. see above httpReducer return statement
     fetch("https://react-hooks-update-faf1a.firebaseio.com/ingredients.json", {
       method: "POST",
@@ -75,9 +75,9 @@ const Ingredients = () => {
             "Something went wrong while adding, please contact developer!",
         });
       });
-  };
+  }, []);
 
-  const removeIngredientHandler = (ingredientId) => {
+  const removeIngredientHandler = useCallback((ingredientId) => {
     dispatchHTTP({ type: "SEND" });
     fetch(
       `https://react-hooks-update-faf1a.firebaseio.com/ingredients/${ingredientId}.json`,
@@ -96,7 +96,7 @@ const Ingredients = () => {
             "Something went wrong while deleting, please contact developer!",
         });
       });
-  };
+  }, []);
 
   const clearError = () => {
     dispatchHTTP({ type: "CLEAR" });
