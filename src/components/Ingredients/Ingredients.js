@@ -76,6 +76,15 @@ const Ingredients = () => {
           type: "ADD",
           ingredient: { id: responseData.name, ...ingredient },
         });
+      })
+      .catch((error) => {
+        // setError("Something went wrong, please contact developer.");
+        // setIsLoading(false);
+        dispatchHTTP({
+          type: "ERROR",
+          errorMessage:
+            "Something went wrong while adding, please contact developer!",
+        });
       });
   };
 
@@ -101,7 +110,8 @@ const Ingredients = () => {
         // setIsLoading(false);
         dispatchHTTP({
           type: "ERROR",
-          errorMessage: "Something went wrong, please contact developer!",
+          errorMessage:
+            "Something went wrong while deleting, please contact developer!",
         });
       });
   };
