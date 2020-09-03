@@ -31,6 +31,7 @@ const Ingredients = () => {
     sendRequest,
     reqExtra,
     reqIdentifier,
+    clear,
   } = useHttp();
 
   useEffect(() => {
@@ -76,8 +77,6 @@ const Ingredients = () => {
     [sendRequest]
   );
 
-  const clearError = useCallback(() => {}, []);
-
   const ingredientList = useMemo(() => {
     return (
       <IngredientList
@@ -89,7 +88,7 @@ const Ingredients = () => {
 
   return (
     <div className='App'>
-      {error && <ErrorModel onClose={clearError}>{error}</ErrorModel>}
+      {error && <ErrorModel onClose={clear}>{error}</ErrorModel>}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
         loading={isLoading}
