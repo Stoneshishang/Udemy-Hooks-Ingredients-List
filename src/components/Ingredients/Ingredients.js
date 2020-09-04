@@ -39,23 +39,18 @@ const Ingredients = () => {
     loading: false,
     error: null,
   });
-  // const [userIngredients, setUserIngredients] = useState([]);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState();
 
   useEffect(() => {
     console.log("RENDERING INGREDIENTS", userIngredients);
   }, [userIngredients]);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
-    // setUserIngredients(filteredIngredients);
     dispatch({ type: "SET", ingredients: filteredIngredients });
   }, []);
 
   // https://console.firebase.google.com/u/0/project/react-hooks-update-faf1a/database/react-hooks-update-faf1a/data
   // try ' git config --global core.safecrlf false ' to get ride of the warning when git add .
   const addIngredientHandler = (ingredient) => {
-    // setIsLoading(true);
     dispatchHTTP({ type: "SEND" }); //this action doesn't need any old data to work. see above httpReducer return statement
     fetch("https://react-hooks-update-faf1a.firebaseio.com/ingredients.json", {
       method: "POST",
@@ -63,23 +58,16 @@ const Ingredients = () => {
       headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
-        // setIsLoading(false);
         dispatchHTTP({ type: "RESPONSE" });
         return response.json();
       })
       .then((responseData) => {
-        // setUserIngredients((prevIngredients) => [
-        //   ...prevIngredients,
-        //   { id: responseData.name, ...ingredient },
-        // ]);
         dispatch({
           type: "ADD",
           ingredient: { id: responseData.name, ...ingredient },
         });
       })
       .catch((error) => {
-        // setError("Something went wrong, please contact developer.");
-        // setIsLoading(false);
         dispatchHTTP({
           type: "ERROR",
           errorMessage:
@@ -89,7 +77,6 @@ const Ingredients = () => {
   };
 
   const removeIngredientHandler = (ingredientId) => {
-    // setIsLoading(true);
     dispatchHTTP({ type: "SEND" });
     fetch(
       `https://react-hooks-update-faf1a.firebaseio.com/ingredients/${ingredientId}.json`,
@@ -98,16 +85,10 @@ const Ingredients = () => {
       }
     )
       .then((response) => {
-        // setIsLoading(false);
         dispatchHTTP({ type: "RESPONSE" });
-        // setUserIngredients((prevIngredients) =>
-        //   prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
-        // );
         dispatch({ type: "DELETE", id: ingredientId });
       })
       .catch((error) => {
-        // setError("Something went wrong, please contact developer.");
-        // setIsLoading(false);
         dispatchHTTP({
           type: "ERROR",
           errorMessage:
@@ -117,7 +98,6 @@ const Ingredients = () => {
   };
 
   const clearError = () => {
-    // setError(null);
     dispatchHTTP({ type: "CLEAR" });
   };
 
